@@ -12,7 +12,11 @@
 
 ## 使用
 
+### 1.服务端
+
 使用**Python3**运行`chat_server`中的`main.py`启动服务器(记得打开5555端口)
+
+### 2.客户端
 
 在Windows端可用Release中的NC来连接
 
