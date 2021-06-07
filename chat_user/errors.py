@@ -10,3 +10,5 @@ class adminloginerror(Exception):
     pass
 class exit(Exception):
     pass
+class logout(Exception):
+    pass

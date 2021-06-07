@@ -13,10 +13,18 @@ def recv(s, buff, t0):
         tmp = s.recv(buff)
         if len(tmp) != 0:
             break
-        if time.time() > t0 + 10:
+        if time.time() > t0 + 5:
             raise err.timeouterror
     # print('tmp:',tmp)
     return tmp
+
+
+# tryclose
+def tryclose(s):
+    try:
+        s.close()
+    except:
+        pass
 
 
 # get
@@ -62,12 +70,9 @@ def get(addr, room, passwd, t, name):
             print('No such room...')
             return -2
         elif get['head'] == 'unpass':
-            print('Wrong password...')
+            print('Wrong secret key...')
             return -2
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
     except err.timeouterror:
         try:
             s.close()
@@ -76,10 +81,7 @@ def get(addr, room, passwd, t, name):
         raise
     except:
         print('\033[31mGet Error:', sys.exc_info()[0], '\033[0m')
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         # raise#
         return -2
 
@@ -120,23 +122,14 @@ def check(addr, room, passwd):
         except:
             pass
     except ConnectionRefusedError:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         return -1
     except err.timeouterror:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         raise
     except:
         print('\033[31mCheck Error:', sys.exc_info()[0], '\033[31m')
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         # raise#
         return -7
 
@@ -173,47 +166,26 @@ def send(addr, room, passwd, name, cont):
         get = recv(s, 512, time.time())
         get = json.loads(get.decode('utf-8'))
         if get['head'] == 'pass':
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return 0
         elif get['head'] == 'no' or get['head'] == 'unpass':
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return -3
         else:
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return -7
     except ConnectionRefusedError:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         return -1
     except err.toolongerror:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         return -2
     except err.timeouterror:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         raise
     except:
         print('\033[31mSend Error:', sys.exc_info()[0], '\033[31m')
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         return -7
 
 
@@ -244,45 +216,77 @@ def creat(addr, room, passwd, n_room, n_passwd):
         get = recv(s, 256, time.time())
         get = json.loads(get.decode('utf-8'))
         if get['head'] == 'no':
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return -2
         elif get['head'] == 'unpass':
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return -3
         elif get['head'] == 'pass':
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return 0
         elif get['head'] == 'fail':
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return -4
         else:
-            try:
-                s.close()
-            except:
-                pass
+            tryclose(s)
             return -7
     except ConnectionRefusedError:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         return -1
     except:
-        print('Creat error:', sys.exc_info()[0])
-        try:
-            s.close()
-        except:
-            pass
+        print('\033[31mCreat error:', sys.exc_info()[0], '\033[0m')
+        tryclose(s)
+        return -7
+
+
+# passwd
+def passwd(addr, room, passwd, n_passwd):
+    """
+    tuple->addr
+    str->room
+    str->passwd
+    str->n_passwd
+
+    return<-int
+    0: 正常
+    -1: 连接错误
+    -2: 房间不存在
+    -3: 秘钥错误
+    -4: 设定失败
+    -7: 为止错误
+    """
+    try:
+        s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(addr)
+        post = {}
+        post['head'] = 'passwd'
+        post['room'] = room
+        post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
+        post['n_passwd'] = hashlib.sha256(n_passwd.encode('utf-8')).hexdigest()
+        post_jb = json.dumps(post).encode('utf-8')
+        s.send(post_jb)
+        get = recv(s, 128, time.time())
+        get = json.loads(get.decode('utf-8'))
+        if get['head'] == 'pass':
+            print('hash:', get['hash'])
+            tryclose(s)
+            return 0
+        elif get['head'] == 'no':
+            tryclose(s)
+            return -2
+        elif get['head'] == 'unpass':
+            tryclose(s)
+            return -3
+        elif get['head'] == 'fail':
+            tryclose(s)
+            return -4
+        else:
+            tryclose(s)
+            return -7
+    except ConnectionRefusedError:
+        tryclose(s)
+        return -1
+    except:
+        print('\033[31mPasswd error:', sys.exc_info()[0], '\033[0m')
+        tryclose(s)
         return -7
