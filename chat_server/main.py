@@ -14,7 +14,7 @@ def recv(s, buff, t0):
         tmp = s.recv(buff)
         if len(tmp) != 0:
             break
-        if time.time() > t0 + 10:
+        if time.time() > t0 + 5:
             raise timeouterror
     return tmp
 
@@ -112,6 +112,8 @@ try:
                 l.send(post_jb)
                 print('\033[32msend finish\033[0m')
             elif get['head'] == 'creat':
+                room = get['room']
+                passwd = get['passwd']
                 post = {}
                 tmp = checkpass(path, room, passwd)
                 post['head'] = tmp
@@ -129,6 +131,23 @@ try:
                 post_jb = json.dumps(post).encode('utf-8')
                 l.send(post_jb)
                 print('\033[32mcreat finish\033[0m')
+            elif get['head'] == 'passwd':
+                room = get['room']
+                passwd = get['passwd']
+                n_passwd = get['n_passwd']
+                post = {}
+                tmp = checkpass(path, room, passwd)
+                post['head'] = tmp
+                if tmp == 'pass':
+                    try:
+                        f=open(path + room + '.safe', 'w')
+                        f.write(n_passwd)
+                        f.close()
+                        post['hash'] = n_passwd
+                    except:
+                        post['head'] = 'fail'
+                post_jb = json.dumps(post).encode('utf-8')
+                l.send(post_jb)
             l.close()
         except KeyboardInterrupt:
             raise
