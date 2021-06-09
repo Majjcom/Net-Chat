@@ -117,17 +117,20 @@ try:
                 post = {}
                 tmp = checkpass(path, room, passwd)
                 post['head'] = tmp
-                if tmp == 'pass':
-                    try:
-                        f = open(path + get['n_room'] + '.dat', 'w')
-                        tmp = {'1.0': ['Sys', 'Welcome, press Ctrl+C to send message...']}
-                        json.dump(tmp, f)
-                        f.close()
-                        f = open(path + get['n_room'] + '.safe', 'w')
-                        f.write(get['n_passwd'])
-                        f.close()
-                    except:
-                        post['head'] = 'fail'
+                if room == 'Sys':
+                    if tmp == 'pass':
+                        try:
+                            f = open(path + get['n_room'] + '.dat', 'w')
+                            tmp = {'1.0': ['Sys', 'Welcome, press Ctrl+C to send message...']}
+                            json.dump(tmp, f)
+                            f.close()
+                            f = open(path + get['n_room'] + '.safe', 'w')
+                            f.write(get['n_passwd'])
+                            f.close()
+                        except:
+                            post['head'] = 'fail'
+                else:
+                    post['head'] == 'fail'
                 post_jb = json.dumps(post).encode('utf-8')
                 l.send(post_jb)
                 print('\033[32mcreat finish\033[0m')
@@ -138,14 +141,17 @@ try:
                 post = {}
                 tmp = checkpass(path, room, passwd)
                 post['head'] = tmp
-                if tmp == 'pass':
-                    try:
-                        f=open(path + room + '.safe', 'w')
-                        f.write(n_passwd)
-                        f.close()
-                        post['hash'] = n_passwd
-                    except:
-                        post['head'] = 'fail'
+                if room == 'Sys':
+                    if tmp == 'pass':
+                        try:
+                            f=open(path + room + '.safe', 'w')
+                            f.write(n_passwd)
+                            f.close()
+                            post['hash'] = n_passwd
+                        except:
+                            post['head'] = 'fail'
+                else:
+                    post['head'] == 'fail'
                 post_jb = json.dumps(post).encode('utf-8')
                 l.send(post_jb)
             l.close()

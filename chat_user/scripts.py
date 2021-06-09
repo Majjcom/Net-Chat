@@ -74,10 +74,7 @@ def get(addr, room, passwd, t, name):
             return -2
         tryclose(s)
     except err.timeouterror:
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
         raise
     except:
         print('\033[31mGet Error:', sys.exc_info()[0], '\033[0m')
@@ -117,10 +114,7 @@ def check(addr, room, passwd):
             return -2
         elif get == 'unpass':
             return -3
-        try:
-            s.close()
-        except:
-            pass
+        tryclose(s)
     except ConnectionRefusedError:
         tryclose(s)
         return -1
