@@ -48,4 +48,4 @@ Windows端可下载[NC_v1.1.2_Win_x86_64.tar.gz](https://github.com/Majjcom/net_
 |LOGOUT|登出当前房间    |ALL   |
 |EXIT  |退出程序        |ALL   |
 |CREAT |创建房间        |Sys   |
-|PASSWD|修改指定房间秘钥|Sys   |
+|PASSWD|修改指定房间密钥|Sys   |
