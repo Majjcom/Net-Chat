@@ -6,72 +6,22 @@ import Obj
 import sys
 import os
 
-# input mode
-def inputmode():
-    global keypress
-    keypress = False
+
+def SetKey():
+    ky.add_hotkey('alt', keypressed)
+
+def RemoveKey():
     try:
-        ky.remove_hotkey('ctrl')
+        ky.remove_hotkey('alt')
     except:
         pass
-    global o
-    global err
-    try:
-        cont = input('\033[36m' + name + ': ')
-        if o.room == 'Sys':
-            cont = '@' + cont
-        if len(cont) == 0:
-            raise err.noneerror
-        if cont[0] != '@':
-            o.Send(cont)
-        else:
-            print('\033[33m', end='')
-            cont = cont.lower()
-            if cont == '@creat':
-                o.Creat()
-            elif cont == '@exit':
-                tmp = input('Really?(y)')
-                if tmp == 'y' or tmp == 'Y':
-                    raise err.exit
-            elif cont == '@logout':
-                tmp = input('Really?(y)')
-                if tmp == 'y' or tmp == 'Y':
-                    raise err.logout
-            elif cont == '@addr' or cont == '@address':
-                print('Server address is:', addr)
-            elif cont == '@clear':
-                os.system('cls')
-            elif cont == '@passwd':
-                o.Passwd()
-            else:
-                print('\033[31mSys: No such command...\033[0m')
-        print('\033[0m')
-    except KeyboardInterrupt:
-        print('\033[0m')
-        raise
-    except err.adminloginerror:
-        print('\033[31mSys: You don\'t have admin access...\033[0m')
-        print()
-    except err.noneerror:
-        print('\033[0mPlease input something...\n')
-    except err.timeouterror:
-        raise
-    except err.exit:
-        raise
-    except err.logout:
-        raise
-    except:
-        print('\033[0mError:', sys.exc_info()[0])
-        # raise#
 
-keypress = False
+def keypressed():
+    RemoveKey()
+    o.Textbox(SetKey)
 
-def spacepressed():
-    global keypress
-    keypress = True
-
-# main
 try:
+    print('\033c', end='')
     addr_name = input('Input server: ')
     print('Finding...')
     addr_ip = socket.gethostbyname(addr_name)
@@ -80,55 +30,55 @@ try:
     addr = (addr_ip, addr_port)
     while True:
         try:
-            os.system('cls')
+            print('\033c', end='')
+            print('Login...\n')
             room = input('Input room name: ')
-            if room == '@exit':
-                raise err.exit
+            if room.lower() == '@exit':
+                sys.exit()
             passwd = input('Input room secret key: ')
             o = Obj.active(addr, room, passwd)
-            os.system('cls')
+            print('\033c', end='')
             print('You are in {} ...'.format(room))
             name = input('Set your name: ')
             if len(name) == 0 or len(name) > 10:
                 raise ValueError
             o.Setname(name)
             print()
-            o.Get()
+            ky.add_hotkey('alt', keypressed)
             while True:
                 try:
-                    ky.add_hotkey('ctrl', spacepressed)
-                    o.Get()
                     time.sleep(1)
-                    if keypress == True:
-                        inputmode()
+                    if o.GetStatue() == 'logout':
+                        RemoveKey()
+                        del o
+                        print('Logout...')
+                        input('\nPress ENTER to continue...\033[0m')
+                        break
+                    if o.GetStatue() == 'exit':
+                        sys.exit()
                 except KeyboardInterrupt:
                     pass
                 except err.timeouterror:
                     print('connection time out...')
                     time.sleep(2)
-                except err.logout:
+                    raise
+                except SystemExit:
+                    print('EXIT')
+                    input('\nPress ENTER to continue...\033[0m')
                     raise
                 except:
                     print('Error:', sys.exc_info()[0])
                     raise
-                finally:
-                    try:
-                        ky.remove_hotkey('ctrl')
-                    except:
-                        pass
-        except err.logout:
-            del o
-            print('Logout...')
-            input('\nPress ENTER to continue...\033[0m')
         except err.loginerror:
+            try:
+                del o
+            except:
+                pass
             print('Login error...')
             input('\nPress ENTER to continue...')
 except ValueError:
     print('Please input rigth value...')
-    input('\nPress ENTER to continue...')
+    input('\nPress ENTER to continue...\033[0m')
 except socket.gaierror:
     print('Wrong server...')
-    input('\nPress ENTER to continue...')
-except err.exit:
-    print('EXIT')
-    input('\nPress ENTER to continue...')
+    input('\nPress ENTER to continue...\033[0m')

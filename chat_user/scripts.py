@@ -8,14 +8,12 @@ import sys
 
 # recv
 def recv(s, buff, t0):
-    # print('in',s,buff,t0)
     while True:
         tmp = s.recv(buff)
         if len(tmp) != 0:
             break
         if time.time() > t0 + 5:
             raise err.timeouterror
-    # print('tmp:',tmp)
     return tmp
 
 
@@ -25,10 +23,14 @@ def tryclose(s):
         s.close()
     except:
         pass
+    try:
+        del s
+    except:
+        pass
 
 
 # get
-def get(addr, room, passwd, t, name):
+def get(addr: tuple, room: str, passwd: str, t, name: str):
     """
     tuple->addr
     str->room
@@ -63,8 +65,9 @@ def get(addr, room, passwd, t, name):
                     get_c = recv(s, 1024, time.time())
                     get_c = json.loads(get_c.decode('utf-8'))
                     # ['name',"cont',float]
-                    if get_c[0] != name:
-                        print('{}: {}'.format(get_c[0], get_c[1]))
+                    if get_c[0] == name:
+                        print('\033[36m', end='')
+                    print('{}: {}\033[0m'.format(get_c[0], get_c[1]))
                 return get_c[2]
         elif get['head'] == 'no':
             print('No such room...')
@@ -84,7 +87,7 @@ def get(addr, room, passwd, t, name):
 
 
 # checkpass
-def check(addr, room, passwd):
+def check(addr: tuple, room: str, passwd: str):
     """
     tuple->addr
     str->room
@@ -129,7 +132,7 @@ def check(addr, room, passwd):
 
 
 # send
-def send(addr, room, passwd, name, cont):
+def send(addr: tuple, room: str, passwd: str, name: str, cont: str):
     """
     tuple->addr
     str->room
@@ -184,7 +187,7 @@ def send(addr, room, passwd, name, cont):
 
 
 # creat
-def creat(addr, room, passwd, n_room, n_passwd):
+def creat(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
     """
     tuple->addr
     str->name
@@ -234,7 +237,7 @@ def creat(addr, room, passwd, n_room, n_passwd):
 
 
 # passwd
-def passwd(addr, room, passwd, n_passwd):
+def passwd(addr: tuple, room: str, passwd: str, n_passwd: str):
     """
     tuple->addr
     str->room
@@ -250,7 +253,7 @@ def passwd(addr, room, passwd, n_passwd):
     -7: 为止错误
     """
     try:
-        s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(addr)
         post = {}
         post['head'] = 'passwd'
@@ -282,5 +285,46 @@ def passwd(addr, room, passwd, n_passwd):
         return -1
     except:
         print('\033[31mPasswd error:', sys.exc_info()[0], '\033[0m')
+        tryclose(s)
+        return -7
+
+
+# getall
+def getall(addr: tuple, room: str, passwd: str):
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(addr)
+        post = {}
+        post['head'] = 'getall'
+        post['room'] = room
+        post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
+        post_jb = json.dumps(post).encode('utf-8')
+        s.send(post_jb)
+        get = recv(s, 1024, time.time())
+        get = json.loads(get.decode('utf-8'))
+        if get['head'] == 'pass':
+            if get['conts'] == 0:
+                return -1
+            else:
+                for i in range(get['conts']):
+                    s.send('1'.encode('utf-8'))
+                    get_c = recv(s, 1024, time.time())
+                    get_c = json.loads(get_c.decode('utf-8'))
+                    print('{}: {}\033[0m'.format(get_c[0], get_c[1]))
+                return 0
+        elif get['head'] == 'no':
+            print('No such room...')
+            return -2
+        elif get['head'] == 'unpass':
+            print('Wrong secret key...')
+            return -2
+    except ConnectionRefusedError:
+        tryclose(s)
+        return -1
+    except err.timeouterror:
+        tryclose(s)
+        raise
+    except:
+        print('\033[31mGetall error:', sys.exc_info()[0], '\033[0m')
         tryclose(s)
         return -7

@@ -6,9 +6,3 @@ class noneerror(Exception):
     pass
 class timeouterror(Exception):
     pass
-class adminloginerror(Exception):
-    pass
-class exit(Exception):
-    pass
-class logout(Exception):
-    pass
