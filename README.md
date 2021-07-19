@@ -36,7 +36,7 @@
 
 ## 获取
 
-Windows端可下载[NC_v1.3.3_Win_x86_64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.3.3/NC_v1.1.2_Win_x86_64.tar.gz)
+Windows端可下载[NC_v1.3.3_Win_x86_64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.3.3/NC_v1.3.3_Win_x86_64.tar.gz)
 
 *本版本仅支持Windows10 X86_64*
 
