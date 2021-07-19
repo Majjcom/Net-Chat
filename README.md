@@ -36,7 +36,7 @@
 
 ## 获取
 
-Windows端可下载[NC_v1.1.2_Win_x86_64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.1.2/NC_v1.1.2_Win_x86_64.exe)
+Windows端可下载[NC_v1.3.3_Win_x86_64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.3.3/NC_v1.1.2_Win_x86_64.tar.gz)
 
 *本版本仅支持Windows10 X86_64*
 
@@ -50,3 +50,4 @@ Windows端可下载[NC_v1.1.2_Win_x86_64.tar.gz](https://github.com/Majjcom/net_
 |EXIT  |退出程序        |ALL   |
 |CREAT |创建房间        |Sys   |
 |PASSWD|修改指定房间密钥|Sys   |
+|GETALL|接收房间所有信息|Sys   |
