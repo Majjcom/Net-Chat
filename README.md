@@ -38,7 +38,7 @@
 
 ## 获取
 
-Windows端可下载[NC_v1.4.0_Win_x86_64.tar.xz](https://github.com/Majjcom/net_chat/releases/download/v1.4.0/NC_v1.4.0_Win_x86_64.tar.xz)
+Windows端可下载[NC_v1.4.0_Win_x86_64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.4.0/NC_v1.4.0_Win_x86_64.tar.gz)
 
 *本版本仅支持Windows10 X86_64*
 
