@@ -28,15 +28,17 @@
 
 随后输入**房间**和**对应秘钥**
 
-进入房间后，按下<kbd>Ctrl</kbd>来进入输入模式，输入内容后按下<kbd>Enter</kbd>可发送
+进入房间后，按下<kbd>Alt</kbd>来进入输入模式，输入内容后按下<kbd>Enter</kbd>可发送
 
 在输入时以\@开头可以运行指令(下方有指令列表)
 
 当登录用户为Sys时，可运行所有指令
 
+**注意，请下载对应服务器提供的公钥**
+
 ## 获取
 
-Windows端可下载[NC_v1.3.3_Win_x86_64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.3.3/NC_v1.3.3_Win_x86_64.tar.gz)
+Windows端可下载[NC_v1.4.0_Win_x86_64.tar.xz](https://github.com/Majjcom/net_chat/releases/download/v1.4.0/NC_v1.4.0_Win_x86_64.tar.xz)
 
 *本版本仅支持Windows10 X86_64*
 

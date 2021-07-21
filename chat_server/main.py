@@ -1,5 +1,6 @@
 import datetime
 import socket
+import secret
 import json
 import time
 import sys
@@ -36,7 +37,7 @@ def checkpass(path, room, passwd):
 def link_check(get):
     room = get['room']
     passwd = get['passwd']
-    l.send(checkpass(path, room, passwd).encode('utf-8'))
+    l.send(secret.encode(checkpass(path, room, passwd), usejson=True))
     print('\033[32mcheck finish\033[0m')
 
 
@@ -59,14 +60,16 @@ def link_get(get):
             cont = cont[len(cont) - 100:]
         print('post:', cont)
         post['conts'] = len(cont)
-        post_jb = json.dumps(post).encode('utf-8')
-        l.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        l.send(post_jbe)
         for i in range(len(cont)):
             get = recv(l, 64, time.time())
-            l.send(json.dumps(cont[i]).encode('utf-8'))
+            l.send(secret.encode(json.dumps(cont[i]), passwd=passwd, usejson=False))
     else:
-        post_jb = json.dumps(post).encode('utf-8')
-        l.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        l.send(post_jbe)
     print('\033[32mget finish\033[0m')
 
 
@@ -133,14 +136,15 @@ def link_creat(get):
 def link_passwd(get):
     room = get['room']
     passwd = get['passwd']
+    n_room = get['n_room']
     n_passwd = get['n_passwd']
     post = {}
-    tmp = checkpass(path, room, passwd)
+    tmp = checkpass(path, n_room, passwd)
     post['head'] = tmp
     if room == 'Sys':
         if tmp == 'pass':
             try:
-                f = open(path + room + '.safe', 'w')
+                f = open(path + n_room + '.safe', 'w+')
                 f.write(n_passwd)
                 f.close()
                 post['hash'] = n_passwd
@@ -148,9 +152,10 @@ def link_passwd(get):
                 post['head'] = 'fail'
     else:
         post['head'] == 'fail'
-    post_jb = json.dumps(post).encode('utf-8')
-    print('post: {}'.format(post_jb))
-    l.send(post_jb)
+    post_j = json.dumps(post)
+    post_jbe = secret.encode(post_j, usejson=False)
+    print('post: {}'.format(post_j))
+    l.send(post_jbe)
     print('\033[32mpasswd finish\033[0m')
 
 
@@ -166,17 +171,19 @@ def link_getall(get):
         cont_j = json.load(f)
         f.close()
         for key in cont_j:
-            cont += [cont_j[key] + [float(key)]]
+            cont += [cont_j[key]]
         print('post:', cont)
         post['conts'] = len(cont)
-        post_jb = json.dumps(post).encode('utf-8')
-        l.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        l.send(post_jbe)
         for i in range(len(cont)):
             get = recv(l, 64, time.time())
-            l.send(json.dumps(cont[i]).encode('utf-8'))
+            l.send(secret.encode(json.dumps(cont[i]), passwd=passwd, usejson=False))
     else:
-        post_jb = json.dumps(post).encode('utf-8')
-        l.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        l.send(post_jbe)
     print('\033[32mgetall finish\033[0m')
 
 
@@ -199,7 +206,8 @@ try:
             l, l_addr = s.accept()
             print('\033[33mLinker: {} atTime: {}\033[0m'.format(l_addr, datetime.datetime.now()))
             get = recv(l, 1024, time.time())
-            get = json.loads(get.decode('utf-8'))
+            get = secret.decode(get, usejson=False)
+            get = json.loads(get)
             print('\033[36mget: {}\033[0m'.format(get))
             if get['head'] == 'check':
                 link_check(get)
@@ -225,7 +233,7 @@ try:
         except:
             try:
                 try:
-                    l.send('干嘛呢，老连我，人家不要嘛。。。'.encode('utf-8'))
+                    l.send('不要再连我了啊，人家不要嘛ヽ(≧□≦)ノ'.encode('utf-8'))
                 except:
                     pass
                 l.close()
@@ -247,3 +255,4 @@ except:
         s.close()
     except:
         pass
+    raise

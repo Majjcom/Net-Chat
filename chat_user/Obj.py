@@ -2,6 +2,7 @@ import threading as thr
 import scripts as src
 import errors as err
 import tkinter
+import getpass
 
 
 class textinputbox(thr.Thread):
@@ -12,7 +13,7 @@ class textinputbox(thr.Thread):
 
     def run(self):
         box = tkinter.Tk()
-        box.title('Sender')
+        box.title('SendBox')
         box.geometry('300x50')
         v = tkinter.Variable()
         etr = tkinter.Entry(box, textvariable=v, width=25)
@@ -44,8 +45,9 @@ class MessageGetter(thr.Thread):
     def run(self):
         from time import sleep
         while True:
-            self._o.Get()
-            if self._o.GetStatue() == 'logout' or self._o.GetStatue() == 'exit':
+            if self._o.GetStatue()[1] != 'pause':
+                self._o.Get()
+            if self._o.GetStatue()[0] == 'logout' or self._o.GetStatue()[0] == 'exit':
                 break
             sleep(1)
 
@@ -57,7 +59,7 @@ class active:
         self._passwd = passwd
         tmp = src.check(addr, room, passwd)
         self._latest = 0.0
-        self._statue = 'normal'
+        self._statue = ['normal', 'continue']
         self._name = ''
         if tmp != 0:
             if tmp == -1:
@@ -73,8 +75,9 @@ class active:
 
     def Setname(self, name: str):
         self._name = name
-        getter = MessageGetter(self)
-        getter.start()
+        if self._room != 'Sys':
+            getter = MessageGetter(self)
+            getter.start()
 
     def Send(self, cont: str):
         tmp = src.send(self._addr, self._room, self._passwd, self._name, cont)
@@ -99,7 +102,11 @@ class active:
             print('\033[31mSys: You don\'t have access to do this...')
             return
         n_room = input('Set room name: ')
-        n_passwd = input('Set secret key: ')
+        n_passwd = getpass.getpass('Set secret key: ')
+        tmp = getpass.getpass('Please input again: ')
+        if n_passwd != tmp:
+            print('\033[31mTwo input have somthing different...')
+            return
         if len(n_room) == 0 or len(n_room) > 8 or len(n_passwd) == 0:
             print('Please input right value...')
         else:
@@ -116,12 +123,16 @@ class active:
             print('\033[31mSys: You don\'t have access to do this...')
             return
         room = input('Input room name: ')
-        passwd = input('Input secret key: ')
-        n_passwd = input('Set new secret key: ')
+        passwd = getpass.getpass('Input secret key: ')
+        n_passwd = getpass.getpass('Set new secret key: ')
+        tmp = getpass.getpass('Please input again: ')
+        if n_passwd != tmp:
+            print('\033[31mTwo input have something different...')
+            return
         if len(room) == 0 or len(room) > 8 or len(passwd) == 0 or len(n_passwd) == 0:
             print('Please input right value...')
         else:
-            tmp = src.passwd(self._addr, room, passwd, n_passwd)
+            tmp = src.passwd(self._addr, self._room, passwd, room, n_passwd)
             if tmp != 0:
                 print('Set key error...', tmp)
             else:
@@ -137,7 +148,7 @@ class active:
             print('\033[31mSys: You don\'t have access to do this...')
             return
         room = input('The room you want to check: ')
-        passwd = input('Input secret key: ')
+        passwd = getpass.getpass('Input secret key: ')
         tmp = src.getall(self._addr, room, passwd)
         if tmp != 0:
             print('Getall error:', tmp)
@@ -148,17 +159,18 @@ class active:
         pass
 
     def Command(self, *argv):
+        self._statue[1] = 'pause'
         print('\033[33m', end='')
         if argv[0] == '@creat':
             self._Creat()
         elif argv[0] == '@exit':
             tmp = input('Really?(y)')
             if tmp.lower() == 'y':
-                self._statue = 'exit'
+                self._statue[0] = 'exit'
         elif argv[0] == '@logout':
             tmp = input('Really?(y)')
             if tmp.lower() == 'y':
-                self._statue = 'logout'
+                self._statue[0] = 'logout'
         elif argv[0] == '@addr':
             print('Server address is:', self._addr)
         elif argv[0] == '@clear':
@@ -169,6 +181,12 @@ class active:
             self._Flush()
         elif argv[0] == '@getall':
             self._Getall()
+        elif argv[0] == 'oth':
+            if argv[1] == 'pause':
+                self._statue[1] = 'pause'
+            elif argv[1] == 'continue':
+                self._statue[1] = 'normal'
         else:
             print('\033[31mSys: No such command...\033[0m')
+        self._statue[1] = 'continue'
         print('\033[0m', end='')

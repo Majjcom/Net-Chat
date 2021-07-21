@@ -1,6 +1,7 @@
 import errors as err
 import hashlib
 import socket
+import secret
 import json
 import time
 import sys
@@ -51,10 +52,12 @@ def get(addr: tuple, room: str, passwd: str, t, name: str):
         post['room'] = room
         post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
         post['time'] = t
-        post_jb = json.dumps(post).encode('utf-8')
-        s.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        s.send(post_jbe)
         get = recv(s, 1024, time.time())
-        get = json.loads(get.decode('utf-8'))
+        get = secret.decode(get, usejson=False)
+        get = json.loads(get)
         # {'head':'no'/'pass'/'unpass','conts':int}
         if get['head'] == 'pass':
             if get['conts'] == 0:
@@ -63,8 +66,9 @@ def get(addr: tuple, room: str, passwd: str, t, name: str):
                 for i in range(get['conts']):
                     s.send('1'.encode('utf-8'))
                     get_c = recv(s, 1024, time.time())
-                    get_c = json.loads(get_c.decode('utf-8'))
-                    # ['name',"cont',float]
+                    get_c = secret.decode(get_c, passwd=post['passwd'], usejson=False)
+                    get_c = json.loads(get_c)
+                    # ['name','cont',float]
                     if get_c[0] == name:
                         print('\033[36m', end='')
                     print('{}: {}\033[0m'.format(get_c[0], get_c[1]))
@@ -107,10 +111,11 @@ def check(addr: tuple, room: str, passwd: str):
         post['head'] = 'check'
         post['room'] = room
         post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
-        post_jb = json.dumps(post).encode('utf-8')
-        s.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        s.send(post_jbe)
         get = recv(s, 128, time.time())
-        get = get.decode('utf-8')
+        get = secret.decode(get, usejson=True)
         if get == 'pass':
             return 0
         elif get == 'no':
@@ -158,8 +163,11 @@ def send(addr: tuple, room: str, passwd: str, name: str, cont: str):
         post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
         post['name'] = name
         post['cont'] = cont
-        post_jb = json.dumps(post).encode('utf-8')
-        s.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        if len(post_jbe) > 1024:
+            raise err.toolongerror
+        s.send(post_jbe)
         get = recv(s, 512, time.time())
         get = json.loads(get.decode('utf-8'))
         if get['head'] == 'pass':
@@ -208,8 +216,9 @@ def creat(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
         post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
         post['n_room'] = n_room
         post['n_passwd'] = hashlib.sha256(n_passwd.encode('utf-8')).hexdigest()
-        post_jb = json.dumps(post).encode('utf-8')
-        s.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        s.send(post_jbe)
         get = recv(s, 256, time.time())
         get = json.loads(get.decode('utf-8'))
         if get['head'] == 'no':
@@ -237,7 +246,7 @@ def creat(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
 
 
 # passwd
-def passwd(addr: tuple, room: str, passwd: str, n_passwd: str):
+def passwd(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
     """
     tuple->addr
     str->room
@@ -259,11 +268,14 @@ def passwd(addr: tuple, room: str, passwd: str, n_passwd: str):
         post['head'] = 'passwd'
         post['room'] = room
         post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
+        post['n_room'] = n_room
         post['n_passwd'] = hashlib.sha256(n_passwd.encode('utf-8')).hexdigest()
-        post_jb = json.dumps(post).encode('utf-8')
-        s.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        s.send(post_jbe)
         get = recv(s, 128, time.time())
-        get = json.loads(get.decode('utf-8'))
+        get = secret.decode(get, usejson=False)
+        get = json.loads(get)
         if get['head'] == 'pass':
             print('hash:', get['hash'])
             tryclose(s)
@@ -298,10 +310,12 @@ def getall(addr: tuple, room: str, passwd: str):
         post['head'] = 'getall'
         post['room'] = room
         post['passwd'] = hashlib.sha256(passwd.encode('utf-8')).hexdigest()
-        post_jb = json.dumps(post).encode('utf-8')
-        s.send(post_jb)
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        s.send(post_jbe)
         get = recv(s, 1024, time.time())
-        get = json.loads(get.decode('utf-8'))
+        get = secret.decode(get, usejson=False)
+        get = json.loads(get)
         if get['head'] == 'pass':
             if get['conts'] == 0:
                 return -1
@@ -309,7 +323,8 @@ def getall(addr: tuple, room: str, passwd: str):
                 for i in range(get['conts']):
                     s.send('1'.encode('utf-8'))
                     get_c = recv(s, 1024, time.time())
-                    get_c = json.loads(get_c.decode('utf-8'))
+                    get_c = secret.decode(get_c, passwd=post['passwd'], usejson=False)
+                    get_c = json.loads(get_c)
                     print('{}: {}\033[0m'.format(get_c[0], get_c[1]))
                 return 0
         elif get['head'] == 'no':

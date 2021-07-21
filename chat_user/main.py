@@ -1,10 +1,10 @@
 import keyboard as ky
 import errors as err
+import getpass
 import socket
 import time
 import Obj
 import sys
-import os
 
 
 def SetKey():
@@ -35,7 +35,7 @@ try:
             room = input('Input room name: ')
             if room.lower() == '@exit':
                 sys.exit()
-            passwd = input('Input room secret key: ')
+            passwd = getpass.getpass('Input room secret key: ')
             o = Obj.active(addr, room, passwd)
             print('\033c', end='')
             print('You are in {} ...'.format(room))
@@ -44,17 +44,19 @@ try:
                 raise ValueError
             o.Setname(name)
             print()
+            if room == 'Sys':
+                o.Get()
             ky.add_hotkey('alt', keypressed)
             while True:
                 try:
                     time.sleep(1)
-                    if o.GetStatue() == 'logout':
+                    if o.GetStatue()[0] == 'logout':
                         RemoveKey()
                         del o
                         print('Logout...')
                         input('\nPress ENTER to continue...\033[0m')
                         break
-                    if o.GetStatue() == 'exit':
+                    if o.GetStatue()[0] == 'exit':
                         sys.exit()
                 except KeyboardInterrupt:
                     pass
