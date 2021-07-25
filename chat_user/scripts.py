@@ -325,6 +325,7 @@ def getall(addr: tuple, room: str, passwd: str):
                     get_c = recv(s, 1024, time.time())
                     get_c = secret.decode(get_c, passwd=post['passwd'], usejson=False)
                     get_c = json.loads(get_c)
+                    print('\033[0m', end='')
                     print('{}: {}\033[0m'.format(get_c[0], get_c[1]))
                 return 0
         elif get['head'] == 'no':

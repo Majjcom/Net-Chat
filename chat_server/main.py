@@ -1,14 +1,57 @@
+import threading as thr
+import errors as err
 import datetime
 import socket
 import secret
+import atexit
 import json
 import time
 import sys
 import os
 
 
-class timeouterror(Exception):
-    pass
+class taker(thr.Thread):
+    def __init__(self, l, get):
+        thr.Thread.__init__(self)
+        self._l = l
+        self._get = get
+    
+    def run(self):
+        try:
+            if self._get['head'] == 'get':
+                link_get(self._l, self._get)
+            elif self._get['head'] == 'send':
+                link_send(self._l, self._get)
+            elif self._get['head'] == 'check':
+                link_check(self._l, self._get)
+            elif self._get['head'] == 'creat':
+                link_creat(self._l, self._get)
+            elif self._get['head'] == 'passwd':
+                link_passwd(self._l, self._get)
+            elif self._get['head'] == 'getall':
+                link_getall(self._l, self._get)
+            self._l.close()
+            del self._l
+        except err.timeouterror:
+            print('connection timeout...')
+            try:
+                self._l.close()
+            except:
+                pass
+            try:
+                del self._l
+            except:
+                pass
+        except:
+            print('Error:', sys.exc_info()[0])
+
+
+def end():
+    print('STOP')
+    try:
+        log_file.close()
+    except:
+        pass
 
 
 def recv(s, buff, t0):
@@ -17,7 +60,7 @@ def recv(s, buff, t0):
         if len(tmp) != 0:
             break
         if time.time() > t0 + 5:
-            raise timeouterror
+            raise err.timeouterror
     return tmp
 
 
@@ -34,14 +77,14 @@ def checkpass(path, room, passwd):
         return 'no'
 
 
-def link_check(get):
+def link_check(l, get):
     room = get['room']
     passwd = get['passwd']
     l.send(secret.encode(checkpass(path, room, passwd), usejson=True))
     print('\033[32mcheck finish\033[0m')
 
 
-def link_get(get):
+def link_get(l, get):
     room = get['room']
     passwd = get['passwd']
     t = get['time']
@@ -73,7 +116,7 @@ def link_get(get):
     print('\033[32mget finish\033[0m')
 
 
-def link_send(get):
+def link_send(l, get):
     room = get['room']
     passwd = get['passwd']
     post = {}
@@ -107,7 +150,7 @@ def link_send(get):
     print('\033[32msend finish\033[0m')
 
 
-def link_creat(get):
+def link_creat(l, get):
     room = get['room']
     passwd = get['passwd']
     post = {}
@@ -133,7 +176,7 @@ def link_creat(get):
     print('\033[32mcreat finish\033[0m')
 
 
-def link_passwd(get):
+def link_passwd(l, get):
     room = get['room']
     passwd = get['passwd']
     n_room = get['n_room']
@@ -159,7 +202,7 @@ def link_passwd(get):
     print('\033[32mpasswd finish\033[0m')
 
 
-def link_getall(get):
+def link_getall(l, get):
     room = get['room']
     passwd = get['passwd']
     post = {}
@@ -196,9 +239,12 @@ try:
     path_a = os.path.realpath(str(__file__))
     path = os.path.split(path_a)[0] + '/data/'
     ##### log stdout
+
     log_name = 'NC_server_log_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.log'
     log_file = open(os.path.join(os.path.split(path_a)[0], log_name), 'w')
     sys.stdout = log_file
+    atexit.register(end)
+
     ##### ----------
     while True:
         try:
@@ -206,49 +252,48 @@ try:
             l, l_addr = s.accept()
             print('\033[33mLinker: {} atTime: {}\033[0m'.format(l_addr, datetime.datetime.now()))
             get = recv(l, 1024, time.time())
-            get = secret.decode(get, usejson=False)
-            get = json.loads(get)
+            get_d = secret.decode(get, usejson=False)
+            get = json.loads(get_d)
             print('\033[36mget: {}\033[0m'.format(get))
-            if get['head'] == 'check':
-                link_check(get)
-            elif get['head'] == 'get':
-                link_get(get)
-            elif get['head'] == 'send':
-                link_send(get)
-            elif get['head'] == 'creat':
-                link_creat(get)
-            elif get['head'] == 'passwd':
-                link_passwd(get)
-            elif get['head'] == 'getall':
-                link_getall(get)
-            l.close()
+            tmp = taker(l, get)
+            tmp.start()
         except KeyboardInterrupt:
             raise
-        except timeouterror:
-            print('connection timeout...')
+        except err.secretWrongError:
+            print('SecretWrong...')
+            try:
+                print('UnknowGet: Start\n{}\n\033[31mEnd\033[0m'.format(get))
+            except:
+                pass
+            try:
+                l.send('别连了别连了，我超级难受哒，好不好嘛ヾ(。￣□￣)ﾂ゜゜゜'.encode('utf-8'))
+            except:
+                pass
             try:
                 l.close()
+            except:
+                pass
+            try:
+                del l
             except:
                 pass
         except:
+            print('Error:', sys.exc_info()[0])
             try:
-                try:
-                    l.send('不要再连我了啊，人家不要嘛ヽ(≧□≦)ノ'.encode('utf-8'))
-                except:
-                    pass
                 l.close()
             except:
                 pass
-            print('Error:', sys.exc_info()[0])
+            try:
+                del l
+            except:
+                pass
 except ConnectionRefusedError:
     print('address already in use...')
     log_file.close()
 except KeyboardInterrupt:
-    print('STOP')
-    log_file.close()
+    end()
 except InterruptedError:
-    print('STOP')
-    log_file.close()
+    end()
 except:
     print('\033[31mError:', sys.exc_info()[0], '\033[0m')
     try:

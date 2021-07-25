@@ -14,10 +14,9 @@ class textinputbox(thr.Thread):
     def run(self):
         box = tkinter.Tk()
         box.title('SendBox')
-        box.geometry('300x50')
+        box.geometry('300x40+200+200')
         v = tkinter.Variable()
-        etr = tkinter.Entry(box, textvariable=v, width=25)
-        etr.pack(side='left')
+        etr = tkinter.Entry(box, textvariable=v, width=1000)
 
         def getcont():
             cont = v.get()
@@ -31,8 +30,9 @@ class textinputbox(thr.Thread):
                     self._o.Command(cont)
             box.destroy()
 
-        btn = tkinter.Button(box, text='SEND', width=10, height=1, command=getcont)
+        btn = tkinter.Button(box, text='SEND', width=8, height=1, command=getcont)
         btn.pack(side='right')
+        etr.pack(side='left')
         box.mainloop()
         self._end()
 
@@ -115,7 +115,7 @@ class active:
                 print('Creat error...', tmp)
             else:
                 print('Room \"{}\" created...'.format(n_room))
-        input('\nPress ENTER to continue...')
+        print('\nFinish...')
         return
 
     def _Passwd(self):
@@ -137,7 +137,7 @@ class active:
                 print('Set key error...', tmp)
             else:
                 print('Room \"{}\"\'s Key reseted...'.format(room))
-        input('\nPress ENTER to continue...')
+        print('\nFinish...')
         return
 
     def _Flush(self):
@@ -149,7 +149,9 @@ class active:
             return
         room = input('The room you want to check: ')
         passwd = getpass.getpass('Input secret key: ')
+        print('Start...\033[0m')
         tmp = src.getall(self._addr, room, passwd)
+        print('\033[33mFinish...')
         if tmp != 0:
             print('Getall error:', tmp)
 
@@ -167,10 +169,14 @@ class active:
             tmp = input('Really?(y)')
             if tmp.lower() == 'y':
                 self._statue[0] = 'exit'
+            else:
+                print('okey...')
         elif argv[0] == '@logout':
             tmp = input('Really?(y)')
             if tmp.lower() == 'y':
                 self._statue[0] = 'logout'
+            else:
+                print('okey...')
         elif argv[0] == '@addr':
             print('Server address is:', self._addr)
         elif argv[0] == '@clear':
@@ -181,6 +187,8 @@ class active:
             self._Flush()
         elif argv[0] == '@getall':
             self._Getall()
+        elif argv[0] == '@傻逼':
+            print('你才傻逼...')
         elif argv[0] == 'oth':
             if argv[1] == 'pause':
                 self._statue[1] = 'pause'
