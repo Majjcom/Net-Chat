@@ -32,6 +32,8 @@ try:
         try:
             print('\033c', end='')
             print('Login...\n')
+            tmp = Obj.active_ping(addr)
+            del tmp
             room = input('Input room name: ')
             if room.lower() == '@exit':
                 sys.exit()
@@ -70,7 +72,6 @@ try:
                     raise
                 except:
                     print('Error:', sys.exc_info()[0])
-                    raise
         except err.loginerror:
             try:
                 del o
@@ -83,4 +84,7 @@ except ValueError:
     input('\nPress ENTER to continue...\033[0m')
 except socket.gaierror:
     print('Wrong server...')
+    input('\nPress ENTER to continue...\033[0m')
+except err.pingerror:
+    print('Can\'t creat connection to the server...')
     input('\nPress ENTER to continue...\033[0m')

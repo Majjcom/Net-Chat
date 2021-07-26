@@ -8,12 +8,12 @@ import sys
 
 
 # recv
-def recv(s, buff, t0):
+def recv(s, buff: int, t0: float, timeout: int = 5):
     while True:
         tmp = s.recv(buff)
         if len(tmp) != 0:
             break
-        if time.time() > t0 + 5:
+        if time.time() > t0 + timeout:
             raise err.timeouterror
     return tmp
 
@@ -91,7 +91,7 @@ def get(addr: tuple, room: str, passwd: str, t, name: str):
 
 
 # checkpass
-def check(addr: tuple, room: str, passwd: str):
+def check(addr: tuple, room: str, passwd: str) -> int:
     """
     tuple->addr
     str->room
@@ -137,7 +137,7 @@ def check(addr: tuple, room: str, passwd: str):
 
 
 # send
-def send(addr: tuple, room: str, passwd: str, name: str, cont: str):
+def send(addr: tuple, room: str, passwd: str, name: str, cont: str) -> int:
     """
     tuple->addr
     str->room
@@ -195,7 +195,7 @@ def send(addr: tuple, room: str, passwd: str, name: str, cont: str):
 
 
 # creat
-def creat(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
+def creat(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str) -> int:
     """
     tuple->addr
     str->name
@@ -246,7 +246,7 @@ def creat(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
 
 
 # passwd
-def passwd(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
+def passwd(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str) -> int:
     """
     tuple->addr
     str->room
@@ -302,7 +302,7 @@ def passwd(addr: tuple, room: str, passwd: str, n_room: str, n_passwd: str):
 
 
 # getall
-def getall(addr: tuple, room: str, passwd: str):
+def getall(addr: tuple, room: str, passwd: str) -> int:
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(addr)
@@ -344,3 +344,38 @@ def getall(addr: tuple, room: str, passwd: str):
         print('\033[31mGetall error:', sys.exc_info()[0], '\033[0m')
         tryclose(s)
         return -7
+
+
+#ping
+def ping(addr: tuple) -> str:
+    """
+    returns:
+        $$x{code}: Error
+        $$o{content}: Pass
+    codes:
+        -1: 连接失败
+        -2: 连接超时
+        -7: 未知错误
+    """
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect(addr)
+        post = {}
+        post['head'] = 'ping'
+        post_j = json.dumps(post)
+        post_jbe = secret.encode(post_j, usejson=False)
+        s.send(post_jbe)
+        get = recv(s, 1024, time.time(), 2)
+        get = secret.decode(get, usejson=False)
+        get = json.loads(get)
+        return '$$o' + get['notice']
+    except ConnectionRefusedError:
+        tryclose(s)
+        return '$$x-1'
+    except err.timeouterror:
+        tryclose(s)
+        return '$$x-2'
+    except:
+        tryclose(s)
+        print('\033[31mPing error:', sys.exc_info()[0], '\033[0m')
+        return '$$x-7'

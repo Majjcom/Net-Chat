@@ -54,13 +54,13 @@ class MessageGetter(thr.Thread):
 
 class active:
     def __init__(self, addr: tuple, room: str, passwd: str):
-        self._addr = addr
-        self._room = room
-        self._passwd = passwd
+        self._addr: tuple = addr
+        self._room: str = room
+        self._passwd: str = passwd
         tmp = src.check(addr, room, passwd)
         self._latest = 0.0
         self._statue = ['normal', 'continue']
-        self._name = ''
+        self._name: str = ''
         if tmp != 0:
             if tmp == -1:
                 print('Connect Failed...')
@@ -155,6 +155,16 @@ class active:
         if tmp != 0:
             print('Getall error:', tmp)
 
+    def _Ping(self):
+        tmp = src.ping(self._addr)
+        if tmp[:3] == '$$x':
+            raise err.pingerror(tmp)
+        elif tmp[:3] == '$$o':
+            pass
+        else:
+            raise err.pingerror(tmp)
+        return tmp[3:]
+
     def Textbox(self, end):
         textbox = textinputbox(self, end)
         textbox.start()
@@ -187,6 +197,13 @@ class active:
             self._Flush()
         elif argv[0] == '@getall':
             self._Getall()
+        elif argv[0] == '@ping':
+            try:
+                tmp = self._Ping()
+                print('Ping start...\n\n', 'Notice:\n', tmp, '\n', sep='')
+                print('Ping finish...')
+            except:
+                print('Ping ERROR...')
         elif argv[0] == '@傻逼':
             print('你才傻逼...')
         elif argv[0] == 'oth':
@@ -198,3 +215,11 @@ class active:
             print('\033[31mSys: No such command...\033[0m')
         self._statue[1] = 'continue'
         print('\033[0m', end='')
+
+
+class active_ping(active):
+    def __init__(self, addr: tuple):
+        self._addr: tuple = addr
+        tmp = self._Ping()
+        print('Notice:\n', tmp, '\n', sep='')
+        return

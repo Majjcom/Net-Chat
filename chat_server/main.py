@@ -30,6 +30,8 @@ class taker(thr.Thread):
                 link_passwd(self._l, self._get)
             elif self._get['head'] == 'getall':
                 link_getall(self._l, self._get)
+            elif self._get['head'] == 'ping':
+                link_ping(self._l, self._get)
             self._l.close()
             del self._l
         except err.timeouterror:
@@ -228,6 +230,23 @@ def link_getall(l, get):
         post_jbe = secret.encode(post_j, usejson=False)
         l.send(post_jbe)
     print('\033[32mgetall finish\033[0m')
+
+
+def link_ping(l, get):
+    post = {}
+    post['head'] = 'pass'
+    try:
+        f = open(os.path.join(path + 'notice', 'notice'), 'rb')
+        post['notice'] = f.read().decode()
+        f.close()
+    except:
+        post['notice'] = 'None'
+    if len(post['notice']) == 0 or len(post['notice']) > 512:
+        post['notice'] = 'None'
+    post_j = json.dumps(post)
+    post_jbe = secret.encode(post_j, usejson=False)
+    l.send(post_jbe)
+    print('\033[32mping finish\033[0m')
 
 
 # main

@@ -38,18 +38,19 @@
 
 ## 获取
 
-Windows端可下载[NC_v1.4.4_Win_amd64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.4.4/NC_v1.4.4_Win_amd64.tar.gz)
+Windows端可下载[NC_v1.5.0_Win_amd64.tar.gz](https://github.com/Majjcom/net_chat/releases/download/v1.5.0/NC_v1.5.0_Win_amd64.tar.gz)
 
-*本版本仅支持Windows10 X86_64*
+*本版本仅支持Windows10 amd64*
 
 ## 指令列表
 
-|指令  |     功能       |权限  |
-|:---- |     :----:     |:----:|
-|ADDR  |查看连接信息    |ALL   |
-|LOGOUT|登出当前房间    |ALL   |
-|CLEAR |清理屏幕        |ALL   |
-|EXIT  |退出程序        |ALL   |
-|CREAT |创建房间        |Sys   |
-|PASSWD|修改指定房间密钥|Sys   |
-|GETALL|接收房间所有信息|Sys   |
+|指令  |     功能         |权限  |
+|:---- |     :----:       |:----:|
+|ADDR  |查看连接信息      |ALL   |
+|LOGOUT|登出当前房间      |ALL   |
+|CLEAR |清理屏幕          |ALL   |
+|EXIT  |退出程序          |ALL   |
+|PING  |发送PING指令给主机|ALL   |
+|CREAT |创建房间          |Sys   |
+|PASSWD|修改指定房间密钥  |Sys   |
+|GETALL|接收房间所有信息  |Sys   |

@@ -8,3 +8,15 @@ class timeouterror(Exception):
     pass
 class secretWrongError(Exception):
     pass
+class pingerror(Exception):
+    def __init__(self, code):
+        Exception.__init__(self)
+        print('PingError:', code)
+        if code[3:] == '-1':
+            print('ConnectionRefused...')
+        elif code[3:] == '-2':
+            print('Timeout...')
+        else:
+            print('Unknown...')
+        print()
+    pass

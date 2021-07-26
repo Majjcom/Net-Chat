@@ -7,7 +7,7 @@ import json
 import zlib
 
 
-const.SEED: str = hashlib.sha1('202107250540'.encode('utf-8')).hexdigest() # Please change the string here...
+const.SEED: str = hashlib.sha1('202107261759'.encode('utf-8')).hexdigest() # Please change the string here...
 
 
 def encode(cont: str, passwd: str = None, usejson: bool = True):
