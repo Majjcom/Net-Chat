@@ -355,6 +355,7 @@ def ping(addr: tuple) -> str:
     codes:
         -1: 连接失败
         -2: 连接超时
+        -3: 秘钥错误
         -7: 未知错误
     """
     try:
@@ -375,6 +376,9 @@ def ping(addr: tuple) -> str:
     except err.timeouterror:
         tryclose(s)
         return '$$x-2'
+    except err.secretWrongError:
+        tryclose(s)
+        return '$$x-3'
     except:
         tryclose(s)
         print('\033[31mPing error:', sys.exc_info()[0], '\033[0m')

@@ -16,6 +16,8 @@ class pingerror(Exception):
             print('ConnectionRefused...')
         elif code[3:] == '-2':
             print('Timeout...')
+        elif code[3:] == '-3':
+            print('SecretWrong...')
         else:
             print('Unknown...')
         print()

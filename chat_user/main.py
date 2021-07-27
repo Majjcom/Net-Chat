@@ -88,3 +88,6 @@ except socket.gaierror:
 except err.pingerror:
     print('Can\'t creat connection to the server...')
     input('\nPress ENTER to continue...\033[0m')
+except err.secretWrongError:
+    print('You Supply Wrong Secret Key, please use correct secret key...')
+    input('\nPress ENTER to continue...\033[0m')

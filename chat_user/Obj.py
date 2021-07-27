@@ -115,7 +115,7 @@ class active:
                 print('Creat error...', tmp)
             else:
                 print('Room \"{}\" created...'.format(n_room))
-        print('\nFinish...')
+        input('\nFinish...')
         return
 
     def _Passwd(self):
@@ -137,7 +137,7 @@ class active:
                 print('Set key error...', tmp)
             else:
                 print('Room \"{}\"\'s Key reseted...'.format(room))
-        print('\nFinish...')
+        input('\nFinish...')
         return
 
     def _Flush(self):
@@ -158,6 +158,8 @@ class active:
     def _Ping(self):
         tmp = src.ping(self._addr)
         if tmp[:3] == '$$x':
+            if tmp[3:] == '-3':
+                raise err.secretWrongError
             raise err.pingerror(tmp)
         elif tmp[:3] == '$$o':
             pass
@@ -205,7 +207,7 @@ class active:
             except:
                 print('Ping ERROR...')
         elif argv[0] == '@傻逼':
-            print('你才傻逼...')
+            print('\033[31mSys: 你才傻逼...')
         elif argv[0] == 'oth':
             if argv[1] == 'pause':
                 self._statue[1] = 'pause'

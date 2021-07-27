@@ -67,8 +67,8 @@ def recv(s, buff, t0):
 
 
 def checkpass(path, room, passwd):
-    if os.path.exists(path + room + '.dat'):
-        f = open(path + room + '.safe', 'r')
+    if os.path.exists(os.path.join(path, room + '.dat')):
+        f = open(os.path.join(path, room + '.safe'), 'r')
         if passwd == f.read():
             f.close()
             return 'pass'
@@ -82,7 +82,7 @@ def checkpass(path, room, passwd):
 def link_check(l, get):
     room = get['room']
     passwd = get['passwd']
-    l.send(secret.encode(checkpass(path, room, passwd), usejson=True))
+    l.send(secret.encode(checkpass(path_d, room, passwd), usejson=True))
     print('\033[32mcheck finish\033[0m')
 
 
@@ -91,11 +91,11 @@ def link_get(l, get):
     passwd = get['passwd']
     t = get['time']
     post = {}
-    tmp = checkpass(path, room, passwd)
+    tmp = checkpass(path_d, room, passwd)
     post['head'] = tmp
     if tmp == 'pass':
         cont = []
-        f = open(path + room + '.dat', 'r')
+        f = open(os.path.join(path_d, room + '.dat'), 'r')
         cont_j = json.load(f)
         f.close()
         for key in cont_j:
@@ -122,17 +122,17 @@ def link_send(l, get):
     room = get['room']
     passwd = get['passwd']
     post = {}
-    if os.path.exists(path + room + '.dat'):
-        f = open(path + room + '.safe', 'r')
+    if os.path.exists(os.path.join(path_d, room + '.dat')):
+        f = open(os.path.join(path_d, room + '.safe'), 'r')
         tmp = f.read()
         f.close()
         if passwd == tmp:
             try:
-                f = open(path + room + '.dat', 'r')
+                f = open(os.path.join(path_d, room + '.dat'), 'r')
                 data = json.load(f)
                 f.close()
                 data[time.time()] = [get['name'], get['cont']]
-                f = open(path + room + '.dat', 'w')
+                f = open(os.path.join(path_d, room + '.dat'), 'w')
                 json.dump(data, f)
                 f.close()
                 post['head'] = 'pass'
@@ -156,16 +156,16 @@ def link_creat(l, get):
     room = get['room']
     passwd = get['passwd']
     post = {}
-    tmp = checkpass(path, room, passwd)
+    tmp = checkpass(path_d, room, passwd)
     post['head'] = tmp
     if room == 'Sys':
         if tmp == 'pass':
             try:
-                f = open(path + get['n_room'] + '.dat', 'w')
+                f = open(os.path.join(path_d, get['n_room'] + '.dat'), 'w')
                 tmp = {'1.0': ['Sys', 'Welcome, press Alt to send message...']}
                 json.dump(tmp, f)
                 f.close()
-                f = open(path + get['n_room'] + '.safe', 'w')
+                f = open(os.path.join(path_d, get['n_room'] + '.safe'), 'w')
                 f.write(get['n_passwd'])
                 f.close()
             except:
@@ -184,12 +184,12 @@ def link_passwd(l, get):
     n_room = get['n_room']
     n_passwd = get['n_passwd']
     post = {}
-    tmp = checkpass(path, n_room, passwd)
+    tmp = checkpass(path_d, n_room, passwd)
     post['head'] = tmp
     if room == 'Sys':
         if tmp == 'pass':
             try:
-                f = open(path + n_room + '.safe', 'w+')
+                f = open(os.path.join(path_d, n_room + '.safe'), 'w+')
                 f.write(n_passwd)
                 f.close()
                 post['hash'] = n_passwd
@@ -208,11 +208,11 @@ def link_getall(l, get):
     room = get['room']
     passwd = get['passwd']
     post = {}
-    tmp = checkpass(path, room, passwd)
+    tmp = checkpass(path_d, room, passwd)
     post['head'] = tmp
     if tmp == 'pass':
         cont = []
-        f = open(path + room + '.dat', 'r')
+        f = open(os.path.join(path_d, room + '.dat'), 'r')
         cont_j = json.load(f)
         f.close()
         for key in cont_j:
@@ -236,7 +236,7 @@ def link_ping(l, get):
     post = {}
     post['head'] = 'pass'
     try:
-        f = open(os.path.join(path + 'notice', 'notice'), 'rb')
+        f = open(os.path.join(path_d, 'notice/notice'), 'rb')
         post['notice'] = f.read().decode()
         f.close()
     except:
@@ -256,11 +256,12 @@ try:
     s.bind(addr)
     s.listen(10)
     path_a = os.path.realpath(str(__file__))
-    path = os.path.split(path_a)[0] + '/data/'
+    path = os.path.split(path_a)[0]
+    path_d = os.path.join(path, 'data')
     ##### log stdout
 
-    log_name = 'NC_server_log_' + datetime.datetime.now().strftime('%Y%m%d%H%M%S') + '.log'
-    log_file = open(os.path.join(os.path.split(path_a)[0], log_name), 'w')
+    log_name = 'NC_server_log_{}.log'.format(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    log_file = open(os.path.join(path, log_name), 'w')
     sys.stdout = log_file
     atexit.register(end)
 
@@ -281,7 +282,7 @@ try:
         except err.secretWrongError:
             print('SecretWrong...')
             try:
-                print('UnknowGet: Start\n{}\n\033[31mEnd\033[0m'.format(get))
+                print('UnknowGet:\n\033[31mStart\033[0m\n{}\n\033[31mEnd\033[0m'.format(get))
             except:
                 pass
             try:
